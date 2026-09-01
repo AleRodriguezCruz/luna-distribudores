@@ -3,7 +3,7 @@
    Si más adelante conectas una base de datos, aquí es donde
    guardarías/leerías el carrito en vez de en la variable "cart". */
 
-const WHATSAPP_NUMBER = "5216460000000"; // reemplaza por tu número real, formato 52 + 10 dígitos
+const WHATSAPP_NUMBER = "6462408127"; // reemplaza por tu número real, formato 52 + 10 dígitos
 
 let cart = []; // [{id, qty}]
 
