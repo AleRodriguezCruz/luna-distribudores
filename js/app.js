@@ -1,5 +1,5 @@
 /* ---------- estado de filtros del catálogo ---------- */
-let state = { cats:new Set(), brands:new Set(), sizes:new Set(), maxPrice:1000, sort:"relevance" };
+let state = { cats:new Set(), brands:new Set(), sizes:new Set(), maxPrice:1000, sort:"relevance", query:"" };
 
 function cardInnerHTML(p){
   return `
@@ -84,11 +84,13 @@ function syncBrandChips(){
 }
 
 function filteredProducts(){
+  const q = state.query.trim().toLowerCase();
   let list = PRODUCTS.filter(p=>{
     if(state.cats.size && !state.cats.has(p.cat)) return false;
     if(state.brands.size && !state.brands.has(p.brand)) return false;
     if(state.sizes.size && !p.sizes.some(s=>state.sizes.has(s))) return false;
     if(p.price > state.maxPrice) return false;
+    if(q && !(`${p.brand} ${p.name}`.toLowerCase().includes(q))) return false;
     return true;
   });
   if(state.sort==='price-asc') list.sort((a,b)=>a.price-b.price);
@@ -222,11 +224,99 @@ function wireToolbar(){
   });
 }
 
+/* ---------- buscador ---------- */
+function searchMatches(q){
+  const query = q.trim().toLowerCase();
+  if(!query) return [];
+  return PRODUCTS.filter(p => `${p.brand} ${p.name}`.toLowerCase().includes(query)).slice(0, 6);
+}
+
+function renderSearchResults(q){
+  const box = document.getElementById('searchResults');
+  const query = q.trim();
+
+  if(!query){
+    box.classList.remove('has-results');
+    box.innerHTML = '';
+    return;
+  }
+
+  const matches = searchMatches(query);
+  box.classList.add('has-results');
+
+  if(matches.length === 0){
+    box.innerHTML = `<div class="search-empty">Sin resultados para "${query}". Intenta con otra marca o prenda.</div>`;
+    return;
+  }
+
+  box.innerHTML = matches.map(p => `
+    <a class="search-result-row" href="#catalogo" data-id="${p.id}">
+      <img src="${p.img}" alt="">
+      <div class="search-result-info">
+        <div class="search-result-brand">${p.brand}</div>
+        <div class="search-result-name">${p.name}</div>
+      </div>
+      <div class="search-result-price">${fmtMoney(p.price)}</div>
+    </a>
+  `).join('') + `<div class="search-see-all" id="searchSeeAll">Ver los ${matches.length < filteredCountFor(query) ? 'primeros' : 'los'} resultados en el catálogo →</div>`;
+}
+
+function filteredCountFor(query){
+  return PRODUCTS.filter(p => `${p.brand} ${p.name}`.toLowerCase().includes(query.toLowerCase())).length;
+}
+
+function openSearch(){
+  document.getElementById('searchBar').classList.add('open');
+  setTimeout(()=> document.getElementById('searchInput').focus(), 150);
+}
+function closeSearch(){
+  document.getElementById('searchBar').classList.remove('open');
+  document.getElementById('searchInput').value = '';
+  state.query = '';
+  renderSearchResults('');
+  renderCatalog();
+}
+
+function wireSearch(){
+  const searchBar = document.getElementById('searchBar');
+  const input = document.getElementById('searchInput');
+
+  document.getElementById('searchBtn').addEventListener('click', ()=>{
+    searchBar.classList.contains('open') ? closeSearch() : openSearch();
+  });
+  document.getElementById('searchClose').addEventListener('click', closeSearch);
+
+  input.addEventListener('input', e=>{
+    state.query = e.target.value;
+    renderSearchResults(state.query);
+    renderCatalog();
+  });
+
+  input.addEventListener('keydown', e=>{
+    if(e.key === 'Enter'){
+      closeSearchDropdownOnly();
+      document.getElementById('catalogo').scrollIntoView({behavior:'smooth'});
+    }
+    if(e.key === 'Escape'){ closeSearch(); }
+  });
+
+  document.getElementById('searchResults').addEventListener('click', e=>{
+    const row = e.target.closest('.search-result-row, #searchSeeAll');
+    if(!row) return;
+    closeSearchDropdownOnly();
+  });
+
+  function closeSearchDropdownOnly(){
+    document.getElementById('searchResults').classList.remove('has-results');
+  }
+}
+
 /* ---------- arranque ---------- */
 document.addEventListener('DOMContentLoaded', ()=>{
   buildFilters();
   wireToolbar();
   wireAddToCart();
+  wireSearch();
   renderCatalog();
   renderCarousel();
   initCart();
