@@ -31,6 +31,11 @@ function changeQty(id, delta){
   renderCart();
 }
 
+function clearCart(){
+  cart = [];
+  renderCart();
+}
+
 function cartCount(){
   return cart.reduce((sum, l) => sum + l.qty, 0);
 }
@@ -119,6 +124,8 @@ function initCart(){
     if(cart.length === 0) return;
     const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${buildWhatsAppMessage()}`;
     window.open(url, '_blank');
+    clearCart();
+    closeCart();
   });
 
   renderCart();
