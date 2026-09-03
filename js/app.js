@@ -107,6 +107,8 @@ function renderCatalog(){
     ? list.map(productCardHTML).join('')
     : `<div class="empty-state"><h3>No encontramos productos con esos filtros</h3><p>Intenta quitar alguno de los filtros seleccionados.</p></div>`;
 
+  if(list.length) observeReveal(grid.querySelectorAll('.card'));
+
   const countText = `${list.length} producto${list.length===1?'':'s'}`;
   document.getElementById('resultCount').textContent = `Mostrando ${countText}`;
   document.getElementById('toolbarCount').textContent = countText;
@@ -117,6 +119,7 @@ function renderCarousel(){
   const track = document.getElementById('carouselTrack');
   const featured = PRODUCTS.filter(p=>p.featured);
   track.innerHTML = featured.map(p=>`<div class="carousel-card">${cardInnerHTML(p)}</div>`).join('');
+  observeReveal(track.querySelectorAll('.carousel-card'));
 
   const dotsBox = document.getElementById('carouselDots');
   dotsBox.innerHTML = featured.map((_,i)=>`<button class="carousel-dot ${i===0?'active':''}" data-index="${i}"></button>`).join('');
@@ -311,12 +314,79 @@ function wireSearch(){
   }
 }
 
+/* ---------- animaciones: scroll-reveal, header, contador ---------- */
+let revealObserver;
+
+function initScrollReveal(){
+  revealObserver = new IntersectionObserver((entries)=>{
+    entries.forEach(entry=>{
+      if(entry.isIntersecting){
+        entry.target.classList.add('in-view');
+        revealObserver.unobserve(entry.target);
+      }
+    });
+  }, { threshold:0.15, rootMargin:'0px 0px -40px 0px' });
+
+  document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+}
+
+/* agrega la clase reveal + un pequeño retraso escalonado a tarjetas que se
+   generan dinámicamente (catálogo filtrado, carrusel) y las observa */
+function observeReveal(elements){
+  if(!revealObserver) return;
+  elements.forEach((el, i)=>{
+    el.classList.add('reveal');
+    el.style.transitionDelay = `${Math.min(i, 8) * 0.05}s`;
+    revealObserver.observe(el);
+  });
+}
+
+function initHeaderScroll(){
+  const header = document.querySelector('header.main');
+  const onScroll = () => header.classList.toggle('scrolled', window.scrollY > 12);
+  onScroll();
+  window.addEventListener('scroll', onScroll, { passive:true });
+}
+
+/* cuenta hacia arriba el "+15 productos" del hero cuando entra en pantalla */
+function initHeroCounter(){
+  const tag = document.querySelector('.hero-tag b');
+  if(!tag) return;
+  const match = tag.textContent.match(/\d+/);
+  if(!match) return;
+
+  const target = Number(match[0]);
+  let started = false;
+
+  const obs = new IntersectionObserver((entries)=>{
+    entries.forEach(entry=>{
+      if(entry.isIntersecting && !started){
+        started = true;
+        let current = 0;
+        const step = Math.max(1, Math.ceil(target / 24));
+        const timer = setInterval(()=>{
+          current = Math.min(current + step, target);
+          tag.textContent = `+${current} productos`;
+          if(current >= target) clearInterval(timer);
+        }, 35);
+        obs.disconnect();
+      }
+    });
+  }, { threshold:0.4 });
+
+  obs.observe(tag);
+}
+
 /* ---------- arranque ---------- */
 document.addEventListener('DOMContentLoaded', ()=>{
+  document.body.classList.add('is-ready');
   buildFilters();
   wireToolbar();
   wireAddToCart();
   wireSearch();
+  initScrollReveal();
+  initHeaderScroll();
+  initHeroCounter();
   renderCatalog();
   renderCarousel();
   initCart();
