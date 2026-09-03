@@ -1,141 +1,270 @@
-/* ---------- carrito de compras ---------- */
-/* Estado en memoria: se reinicia al recargar la página.
-   Si más adelante conectas una base de datos, aquí es donde
-   guardarías/leerías el carrito en vez de en la variable "cart". */
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Luna Distribuidores — Ropa para caballero</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,500&family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
 
-const WHATSAPP_NUMBER = "5216460000000"; // reemplaza por tu número real, formato 52 + 10 dígitos
+<div class="topbar">
+  <div class="wrap">
+    <span>Envíos a todo México. Distribuidor autorizado de las marcas que manejas.</span>
+    <span>Mayoreo y menudeo · Ensenada, B.C.</span>
+  </div>
+</div>
 
-let cart = []; // [{id, qty}]
-let lastCartCount = 0; // usado solo para saber cuándo animar el contador
+<header class="main">
+  <div class="header-row">
+    <a href="#top" class="logo">
+      <img src="assets/logo.jpg" alt="Luna Distribuidores">
+      <div class="logo-text">
+        LUNA
+        <small>DISTRIBUIDORES</small>
+      </div>
+    </a>
 
-function fmtMoney(n){ return "$" + n.toLocaleString("es-MX"); }
+    <nav class="primary">
+      <a href="#destacados">Destacados</a>
+      <a href="#catalogo" data-cat="playeras">Playeras</a>
+      <a href="#catalogo" data-cat="camisas">Camisas</a>
+      <a href="#catalogo" data-cat="pantalones">Pantalones</a>
+      <a href="#marcas">Marcas</a>
+    </nav>
 
-function findProduct(id){ return PRODUCTS.find(p => p.id === id); }
+    <div class="header-actions">
+      <button class="icon-btn" id="searchBtn" aria-label="Buscar">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      </button>
+      <button class="icon-btn" aria-label="Cuenta">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4.5 5-6 8-6s6.5 1.5 8 6"/></svg>
+      </button>
+      <button class="icon-btn cart-btn" id="cartBtn" aria-label="Ver carrito">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 6h2l2.4 12.2a2 2 0 0 0 2 1.6h7.6a2 2 0 0 0 2-1.6L21 8H6"/><circle cx="10" cy="21" r="1"/><circle cx="17" cy="21" r="1"/></svg>
+        <span class="cart-count" id="cartCount">0</span>
+      </button>
+      <button class="icon-btn menu-toggle" id="menuToggle" aria-label="Menú">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
 
-function addToCart(id, qty = 1){
-  const line = cart.find(l => l.id === id);
-  if(line){ line.qty += qty; } else { cart.push({ id, qty }); }
-  renderCart();
-  openCart();
-}
+<div class="search-bar" id="searchBar">
+  <div class="wrap search-bar-inner">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+    <input type="text" id="searchInput" placeholder="Buscar por producto o marca (ej. jeans, Levi's, camisa)..." autocomplete="off">
+    <button id="searchClose" aria-label="Cerrar búsqueda">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M18 6L6 18M6 6l12 12"/></svg>
+    </button>
+  </div>
+  <div class="search-results wrap" id="searchResults"></div>
+</div>
 
-function removeFromCart(id){
-  cart = cart.filter(l => l.id !== id);
-  renderCart();
-}
+<section class="hero" id="top">
+  <div class="wrap">
+    <div>
+      <div class="hero-eyebrow">
+        <img src="assets/logo.jpg" alt="">
+        DISTRIBUIDOR AUTORIZADO
+      </div>
+      <h1>Marcas que ya conoces, <em>al precio que buscas.</em></h1>
+      <p>Levi's, Calvin Klein, American Rag, English Laundry, Dickies y más, con fotos reales de lo que tenemos en tienda. Mayoreo y menudeo para todo México.</p>
+      <div class="hero-ctas">
+        <a href="#destacados" class="btn btn-brass">Ver destacados</a>
+        <a href="#catalogo" class="btn btn-outline">Ver catálogo completo</a>
+      </div>
+    </div>
+    <div class="hero-visual">
+      <img src="assets/logo.jpg" alt="Luna Distribuidores">
+      <div class="hero-tag"><b>+15 productos</b>fotografiados de nuestro stock</div>
+    </div>
+  </div>
+</section>
 
-function changeQty(id, delta){
-  const line = cart.find(l => l.id === id);
-  if(!line) return;
-  line.qty += delta;
-  if(line.qty <= 0){ removeFromCart(id); return; }
-  renderCart();
-}
+<section class="brand-strip" id="marcas">
+  <div class="wrap" id="brandStrip">
+    <span class="brand-strip-label">COMPRAR POR MARCA</span>
+    <!-- Los chips de marca se generan también desde JS, pero dejamos las más buscadas fijas arriba -->
+    <button class="brand-chip" data-brand="Levi's">Levi's</button>
+    <button class="brand-chip" data-brand="Calvin Klein Jeans">Calvin Klein</button>
+    <button class="brand-chip" data-brand="American Rag">American Rag</button>
+    <button class="brand-chip" data-brand="English Laundry">English Laundry</button>
+    <button class="brand-chip" data-brand="Dickies">Dickies</button>
+    <button class="brand-chip" data-brand="Eddie Bauer">Eddie Bauer</button>
+    <button class="brand-chip" data-brand="Weatherproof Vintage">Weatherproof</button>
+    <button class="brand-chip" data-brand="MBX Premium Goods">MBX</button>
+    <button class="brand-chip" data-brand="O'Neill">O'Neill</button>
+  </div>
+</section>
 
-function clearCart(){
-  cart = [];
-  renderCart();
-}
+<section class="carousel-section" id="destacados">
+  <div class="wrap">
+    <div class="carousel-head reveal">
+      <div>
+        <h2>Destacados de esta semana</h2>
+        <p>Selección directa de nuestro inventario fotografiado</p>
+      </div>
+    </div>
+    <div class="carousel-viewport">
+      <button class="carousel-arrow left" id="carouselPrev" aria-label="Anterior">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+      </button>
+      <div class="carousel-track" id="carouselTrack"></div>
+      <button class="carousel-arrow right" id="carouselNext" aria-label="Siguiente">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+      </button>
+    </div>
+    <div class="carousel-dots" id="carouselDots"></div>
+  </div>
+</section>
 
-function cartCount(){
-  return cart.reduce((sum, l) => sum + l.qty, 0);
-}
+<section class="catalog" id="catalogo">
+  <div class="wrap">
+    <div class="catalog-head reveal">
+      <div>
+        <h2>Catálogo para caballero</h2>
+        <p id="resultCount">Mostrando productos</p>
+      </div>
+    </div>
 
-function cartSubtotal(){
-  return cart.reduce((sum, l) => {
-    const p = findProduct(l.id);
-    return p ? sum + p.price * l.qty : sum;
-  }, 0);
-}
+    <button class="filters-toggle" id="filtersToggle">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 6h16M7 12h10M10 18h4"/></svg>
+      Filtros
+    </button>
 
-function openCart(){
-  document.getElementById('cartDrawer').classList.add('open');
-  document.getElementById('cartOverlay').classList.add('open');
-}
-function closeCart(){
-  document.getElementById('cartDrawer').classList.remove('open');
-  document.getElementById('cartOverlay').classList.remove('open');
-}
-
-function renderCart(){
-  const countEl = document.getElementById('cartCount');
-  const newCount = cartCount();
-  countEl.textContent = newCount;
-  if(newCount > lastCartCount){
-    countEl.classList.remove('bump');
-    void countEl.offsetWidth; // reinicia la animación aunque se repita seguido
-    countEl.classList.add('bump');
-  }
-  lastCartCount = newCount;
-
-  const itemsBox = document.getElementById('cartItems');
-  const footer = document.getElementById('cartFooter');
-
-  if(cart.length === 0){
-    itemsBox.innerHTML = `
-      <div class="cart-empty">
-        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 6h2l2.4 12.2a2 2 0 0 0 2 1.6h7.6a2 2 0 0 0 2-1.6L21 8H6"/><circle cx="10" cy="21" r="1"/><circle cx="17" cy="21" r="1"/></svg>
-        <p>Tu carrito está vacío.<br>Agrega productos desde el catálogo.</p>
-      </div>`;
-    footer.style.display = 'none';
-    return;
-  }
-
-  footer.style.display = 'block';
-  itemsBox.innerHTML = cart.map(line => {
-    const p = findProduct(line.id);
-    if(!p) return '';
-    return `
-      <div class="cart-item">
-        <img src="${p.img}" alt="${p.name}">
-        <div class="cart-item-info">
-          <span class="cart-item-brand">${p.brand}</span>
-          <span class="cart-item-name">${p.name}</span>
-          <div class="qty-stepper">
-            <button data-action="dec" data-id="${p.id}" aria-label="Quitar uno">−</button>
-            <span>${line.qty}</span>
-            <button data-action="inc" data-id="${p.id}" aria-label="Agregar uno">+</button>
-          </div>
-          <span class="cart-item-price">${fmtMoney(p.price * line.qty)}</span>
+    <div class="catalog-grid">
+      <aside class="filters" id="filters">
+        <div class="filter-group">
+          <div class="filter-title">CATEGORÍA</div>
+          <div id="catFilters"></div>
         </div>
-        <button class="cart-item-remove" data-action="remove" data-id="${p.id}">Quitar</button>
-      </div>`;
-  }).join('');
+        <div class="filter-group">
+          <div class="filter-title">MARCA</div>
+          <div id="brandFilters"></div>
+        </div>
+        <div class="filter-group">
+          <div class="filter-title">TALLA</div>
+          <div class="size-grid" id="sizeFilters"></div>
+        </div>
+        <div class="filter-group" style="border-bottom:none;">
+          <div class="filter-title">PRECIO MÁXIMO</div>
+          <input type="range" id="priceRange" min="200" max="1000" step="10" value="1000" style="width:100%; accent-color:#1C2B45;">
+          <div style="font-size:13px; margin-top:6px;" id="priceLabel">Hasta $1,000</div>
+        </div>
+        <a class="clear-filters" id="clearFilters">Limpiar filtros</a>
+      </aside>
 
-  document.getElementById('cartSubtotal').textContent = fmtMoney(cartSubtotal());
-}
+      <div>
+        <div class="toolbar">
+          <span id="toolbarCount"></span>
+          <select id="sortSelect">
+            <option value="relevance">Más relevantes</option>
+            <option value="price-asc">Precio: menor a mayor</option>
+            <option value="price-desc">Precio: mayor a menor</option>
+            <option value="name">Nombre A–Z</option>
+          </select>
+        </div>
+        <div class="product-grid" id="productGrid"></div>
+      </div>
+    </div>
+  </div>
+</section>
 
-function buildWhatsAppMessage(){
-  const lines = cart.map(line => {
-    const p = findProduct(line.id);
-    return `• ${line.qty} x ${p.brand} — ${p.name} (${fmtMoney(p.price)} c/u)`;
-  });
-  const total = `\nTotal estimado: ${fmtMoney(cartSubtotal())}`;
-  const msg = `Hola, quiero pedir lo siguiente en Luna Distribuidores:\n\n${lines.join('\n')}${total}`;
-  return encodeURIComponent(msg);
-}
+<section class="value-strip">
+  <div class="wrap">
+    <div class="value-item reveal">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="1" y="6" width="16" height="12" rx="1"/><path d="M17 10h3l3 3v5h-6"/><circle cx="6" cy="18.5" r="1.6"/><circle cx="17.5" cy="18.5" r="1.6"/></svg>
+      <div><b>Envíos a todo México</b><span>Entregas foráneas y locales en Ensenada</span></div>
+    </div>
+    <div class="value-item reveal">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="9"/></svg>
+      <div><b>Producto original</b><span>Distribuidor autorizado de cada marca</span></div>
+    </div>
+    <div class="value-item reveal">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 3v18h18"/><path d="M7 15l4-5 3 3 5-7"/></svg>
+      <div><b>Precio de mayoreo</b><span>Descuentos por volumen para tiendas</span></div>
+    </div>
+    <div class="value-item reveal">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+      <div><b>Atención directa</b><span>Asesoría personalizada por WhatsApp</span></div>
+    </div>
+  </div>
+</section>
 
-function initCart(){
-  document.getElementById('cartBtn').addEventListener('click', openCart);
-  document.getElementById('cartClose').addEventListener('click', closeCart);
-  document.getElementById('cartOverlay').addEventListener('click', closeCart);
+<footer>
+  <div class="wrap">
+    <div class="footer-grid">
+      <div>
+        <div class="footer-logo">
+          <img src="assets/logo.jpg" alt="Luna Distribuidores">
+          <span>LUNA</span>
+        </div>
+        <p>Distribuidores de ropa para caballero. Trabajamos con las marcas que tus clientes ya buscan, a precios de mayoreo y menudeo.</p>
+        <div class="newsletter">
+          <input type="email" placeholder="Tu correo electrónico">
+          <button>Enviar</button>
+        </div>
+      </div>
+      <div>
+        <h4>CATÁLOGO</h4>
+        <ul>
+          <li><a href="#catalogo">Playeras</a></li>
+          <li><a href="#catalogo">Camisas</a></li>
+          <li><a href="#catalogo">Pantalones</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>MARCAS</h4>
+        <ul>
+          <li><a href="#marcas">Levi's</a></li>
+          <li><a href="#marcas">Calvin Klein</a></li>
+          <li><a href="#marcas">American Rag</a></li>
+          <li><a href="#marcas">English Laundry</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>CONTACTO</h4>
+        <ul>
+          <li>Ensenada, Baja California, México</li>
+          <li>WhatsApp: 646 000 0000</li>
+          <li>ventas@lunadistribuidores.mx</li>
+          <li>Lun–Sáb, 9:00–19:00</li>
+        </ul>
+      </div>
+    </div>
+    <div class="bottom-row">
+      <span>© 2026 Luna Distribuidores. Todos los derechos reservados.</span>
+      <span>Las marcas mostradas pertenecen a sus respectivos propietarios.</span>
+    </div>
+  </div>
+</footer>
 
-  document.getElementById('cartItems').addEventListener('click', e => {
-    const btn = e.target.closest('button[data-action]');
-    if(!btn) return;
-    const id = Number(btn.dataset.id);
-    if(btn.dataset.action === 'inc') changeQty(id, 1);
-    if(btn.dataset.action === 'dec') changeQty(id, -1);
-    if(btn.dataset.action === 'remove') removeFromCart(id);
-  });
+<!-- ---------- carrito lateral ---------- -->
+<div class="overlay" id="cartOverlay"></div>
+<aside class="cart-drawer" id="cartDrawer">
+  <div class="cart-head">
+    <h3>Tu carrito</h3>
+    <button class="cart-close" id="cartClose" aria-label="Cerrar carrito">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M18 6L6 18M6 6l12 12"/></svg>
+    </button>
+  </div>
+  <div class="cart-items" id="cartItems"></div>
+  <div class="cart-footer" id="cartFooter">
+    <div class="cart-subtotal-row">
+      <span>Subtotal</span>
+      <b id="cartSubtotal">$0</b>
+    </div>
+    <button class="btn btn-brass cart-checkout" id="checkoutBtn">Pedir por WhatsApp</button>
+    <p class="cart-note">Te confirmamos disponibilidad y forma de pago por WhatsApp antes de cerrar el pedido.</p>
+  </div>
+</aside>
 
-  document.getElementById('checkoutBtn').addEventListener('click', () => {
-    if(cart.length === 0) return;
-    const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${buildWhatsAppMessage()}`;
-    window.open(url, '_blank');
-    clearCart();
-    closeCart();
-  });
-
-  renderCart();
-}
+<script src="js/data.js"></script>
+<script src="js/cart.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
